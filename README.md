@@ -1,0 +1,2 @@
+# Matlab-LDA
+ Matlab function for linear discriminant analysis that automatically adjusted weights for each label. It returns, the LDA component scores, class posterior probabilities, and the trained model.

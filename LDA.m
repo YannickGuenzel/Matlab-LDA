@@ -18,7 +18,8 @@ function [score, posteriors, Mdl] = LDA(data, labels, varargin)
 % OUTPUTS:
 % - score      : LDA component scores, returned as an n-by-(#components)
 %                matrix. Rows of score correspond to observations, and
-%                columns to components.
+%                columns to components. Only possible if 'DiscrimType' is
+%                linear or pseudolinear.
 % - posteriors : Posterior probabilities, returned as an n-by-k matrix,
 %                where k is the number of classes. posteriors(i,j) is the
 %                probability that observation i belongs to class j.
@@ -52,15 +53,19 @@ Mdl = fitcdiscr(data, labelsNumeric, ...
     'DiscrimType',  p.Results.DiscrimType);
 
 % Project data into the LDA space
-% W are the eigenvectors (discriminant directions),
-% lambda are the corresponding eigenvalues in LAMBDA
-[W, LAMBDA] = eig(Mdl.BetweenSigma, Mdl.Sigma);
-lambda = diag(LAMBDA);
-% Sort directions by descending eigenvalues
-[~, SortOrder] = sort(lambda, 'descend');
-W = W(:, SortOrder);
-% Compute LDA scores
-score = data * W;
+if strcmp(p.Results.DiscrimType, 'linear') || strcmp(p.Results.DiscrimType, 'pseudolinear')
+    % W are the eigenvectors (discriminant directions),
+    % lambda are the corresponding eigenvalues in LAMBDA
+    [W, LAMBDA] = eig(Mdl.BetweenSigma, Mdl.Sigma);
+    lambda = diag(LAMBDA);
+    % Sort directions by descending eigenvalues
+    [~, SortOrder] = sort(lambda, 'descend');
+    W = W(:, SortOrder);
+    % Compute LDA scores
+    score = data * W;
+else
+    score = [];
+end
 
 % Get posterior probabilities for each class using predict
 % predict returns [predictedLabels, posteriors, cost].
