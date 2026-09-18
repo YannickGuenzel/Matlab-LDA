@@ -14,6 +14,9 @@ function [score, posteriors, Mdl] = LDA(data, labels, varargin)
 % NAME-VALUE PAIRS:
 % - 'DiscrimType' : 'linear' (default), 'diaglinear', 'pseudolinear',
 %                   'quadratic', 'diagquadratic', or 'pseudoquadratic'
+% - 'Gamma'       : Gamma controls covariance regularization
+%                   Gamma = 0      ordinary LDA
+%                   Gamma = 1      increasingly diagonal covariance
 %
 % OUTPUTS:
 % - score      : LDA component scores, returned as an n-by-(#components)
@@ -32,6 +35,8 @@ p = inputParser;
 addParameter(p, 'DiscrimType', 'linear', ...
     @(x) any(strcmpi(x, ...
     {'linear','diaglinear','pseudolinear','quadratic','diagquadratic','pseudoquadratic'})));
+addParameter(p, 'Gamma', 0, ...
+    @(x) isnumeric(x) && isscalar(x) && x >= 0 && x <= 1);
 parse(p, varargin{:});
 
 % Convert labels to numeric labels
@@ -50,7 +55,8 @@ label_w = label_w / sum(label_w);  % normalize weights to sum to 1
 % Fit the discriminant model
 Mdl = fitcdiscr(data, labelsNumeric, ...
     'Weights',      label_w, ...
-    'DiscrimType',  p.Results.DiscrimType);
+    'DiscrimType',  p.Results.DiscrimType, ...
+    'Gamma',        p.Results.Gamma);
 
 % Project data into the LDA space
 if strcmp(p.Results.DiscrimType, 'linear') || strcmp(p.Results.DiscrimType, 'pseudolinear')
